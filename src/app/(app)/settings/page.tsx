@@ -5,6 +5,8 @@ import { labelize } from "@/lib/format"
 import { InviteUserForm } from "./invite-user-form"
 import { CreateDepotForm } from "./create-depot-form"
 import { CreateRepForm } from "./create-rep-form"
+import { ChangePasswordForm } from "./change-password-form"
+import { UserRowActions } from "./user-row-actions"
 
 export default async function SettingsPage() {
   const currentUser = await requireCurrentUser()
@@ -24,18 +26,33 @@ export default async function SettingsPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
+          <CardHeading>My account</CardHeading>
+          <p className="mb-3 text-sm text-zinc-600">
+            {currentUser.full_name} &middot; {currentUser.email}
+          </p>
+          <ChangePasswordForm />
+        </Card>
+
+        <Card>
           <CardHeading count={users?.length ?? 0}>Users</CardHeading>
           {!users || users.length === 0 ? (
             <EmptyState>No users yet.</EmptyState>
           ) : (
             <ul className="divide-y divide-zinc-100 text-sm">
               {users.map((u) => (
-                <li key={u.id} className="flex items-center justify-between py-2">
-                  <div>
-                    <p className="font-medium text-zinc-900">{u.full_name}</p>
-                    <p className="text-xs text-zinc-500">{u.email} · {labelize(u.role)}</p>
+                <li key={u.id} className="py-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-zinc-900">{u.full_name}</p>
+                      <p className="text-xs text-zinc-500">{u.email} · {labelize(u.role)}</p>
+                    </div>
+                    <Badge value={u.status} />
                   </div>
-                  <Badge value={u.status} />
+                  {isAdmin && (
+                    <div className="mt-1">
+                      <UserRowActions userId={u.id} status={u.status} />
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
