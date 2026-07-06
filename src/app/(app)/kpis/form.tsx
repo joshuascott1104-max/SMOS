@@ -16,6 +16,9 @@ export function KpiForm({ reps }: { reps: { id: string; full_name: string }[] })
   const [wins, setWins] = useState(0)
   const [revenueWon, setRevenueWon] = useState(0)
   const [forecastValue, setForecastValue] = useState(0)
+  const [qualifiedOpportunities, setQualifiedOpportunities] = useState(0)
+  const [discoveryMeetings, setDiscoveryMeetings] = useState(0)
+  const [proposalsIssued, setProposalsIssued] = useState(0)
   const [managerNotes, setManagerNotes] = useState("")
 
   return (
@@ -50,6 +53,9 @@ export function KpiForm({ reps }: { reps: { id: string; full_name: string }[] })
         <NumberField label="Wins" value={wins} onChange={setWins} />
         <NumberField label="Revenue won (£)" value={revenueWon} onChange={setRevenueWon} />
         <NumberField label="Forecast (£)" value={forecastValue} onChange={setForecastValue} />
+        <NumberField label="Qualified opportunities (target 20/wk)" value={qualifiedOpportunities} onChange={setQualifiedOpportunities} />
+        <NumberField label="Discovery meetings (target 8/wk)" value={discoveryMeetings} onChange={setDiscoveryMeetings} />
+        <NumberField label="Proposals issued (target 6/wk)" value={proposalsIssued} onChange={setProposalsIssued} />
       </div>
       <div>
         <label className="block text-xs font-medium text-zinc-600">Manager notes</label>
@@ -73,6 +79,9 @@ export function KpiForm({ reps }: { reps: { id: string; full_name: string }[] })
               wins,
               revenueWon,
               forecastValue,
+              qualifiedOpportunities,
+              discoveryMeetings,
+              proposalsIssued,
               managerNotes,
             })
             setSaved(true)

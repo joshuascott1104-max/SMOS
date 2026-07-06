@@ -29,6 +29,7 @@ export async function createRep(input: {
   depotId: string
   startDate: string | null
   monthlyTarget: number
+  newCustomerTarget: number
 }) {
   const user = await requireCurrentUser()
   const supabase = await createClient()
@@ -39,11 +40,25 @@ export async function createRep(input: {
     manager_id: user.id,
     start_date: input.startDate,
     monthly_target: input.monthlyTarget,
+    new_customer_target: input.newCustomerTarget,
   })
 
   if (error) throw new Error(error.message)
   revalidatePath("/team")
   revalidatePath("/settings")
+}
+
+export async function updateRepTargets(repId: string, monthlyTarget: number, newCustomerTarget: number) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from("reps")
+    .update({ monthly_target: monthlyTarget, new_customer_target: newCustomerTarget })
+    .eq("id", repId)
+  if (error) throw new Error(error.message)
+  revalidatePath("/team")
+  revalidatePath("/settings")
+  revalidatePath(`/reps/${repId}`)
+  revalidatePath(`/reps/${repId}/scorecard`)
 }
 
 export async function updateRepStatus(repId: string, status: "active" | "inactive") {

@@ -13,6 +13,9 @@ export async function upsertKpi(input: {
   wins: number
   revenueWon: number
   forecastValue: number
+  qualifiedOpportunities: number
+  discoveryMeetings: number
+  proposalsIssued: number
   managerNotes: string
 }) {
   const user = await requireCurrentUser()
@@ -33,6 +36,9 @@ export async function upsertKpi(input: {
       wins: input.wins,
       revenue_won: input.revenueWon,
       forecast_value: input.forecastValue,
+      qualified_opportunities: input.qualifiedOpportunities,
+      discovery_meetings: input.discoveryMeetings,
+      proposals_issued: input.proposalsIssued,
       conversion_rate: conversionRate,
       activity_score: activityScore,
       performance_score: performanceScore,
@@ -45,4 +51,6 @@ export async function upsertKpi(input: {
   revalidatePath(`/reps/${input.repId}`)
   revalidatePath("/team")
   revalidatePath("/kpis")
+  revalidatePath("/commercial-health")
+  revalidatePath(`/reps/${input.repId}/scorecard`)
 }

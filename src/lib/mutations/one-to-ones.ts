@@ -15,6 +15,8 @@ export type OneToOneInput = {
   repFeedback: string
   overallRating: number | null
   nextReviewDate: string | null
+  supportRequired: string
+  recognitionAchieved: string
   objectiveUpdates: { id: string; status: string; progressNotes: string }[]
   newObjectives: { objective: string; successMeasure: string; dueDate: string | null }[]
   newActions: {
@@ -38,6 +40,14 @@ export async function createOneToOne(input: OneToOneInput) {
     if (error) throw new Error(error.message)
   }
 
+  const reviewMonth = `${input.reviewDate.slice(0, 7)}-01`
+  const { data: commercialScore } = await supabase
+    .from("commercial_scores")
+    .select("id")
+    .eq("rep_id", input.repId)
+    .eq("month", reviewMonth)
+    .maybeSingle()
+
   const { data: review, error } = await supabase
     .from("one_to_one_reviews")
     .insert({
@@ -52,6 +62,9 @@ export async function createOneToOne(input: OneToOneInput) {
       rep_feedback: input.repFeedback,
       overall_rating: input.overallRating,
       next_review_date: input.nextReviewDate,
+      support_required: input.supportRequired,
+      recognition_achieved: input.recognitionAchieved,
+      commercial_score_id: commercialScore?.id ?? null,
     })
     .select()
     .single()

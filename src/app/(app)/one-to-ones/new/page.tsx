@@ -1,8 +1,12 @@
+import Link from "next/link"
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { requireCurrentUser } from "@/lib/auth"
+import { getRepCommercialHealth, currentMonth } from "@/lib/data/commercial-health"
 import { PageHeader, Card, CardHeading, EmptyState, Badge } from "@/components/ui"
 import { formatCurrency, formatDate } from "@/lib/format"
+import { ScoreRing } from "@/components/score-ring"
+import { RatingBadge } from "@/components/rating-badge"
 import { OneToOneForm } from "./form"
 
 export default async function NewOneToOnePage({ searchParams }: { searchParams: Promise<{ repId?: string }> }) {
@@ -31,10 +35,11 @@ export default async function NewOneToOnePage({ searchParams }: { searchParams: 
     )
   }
 
-  const [{ data: rep }, { data: objectives }, { data: kpis }] = await Promise.all([
+  const [{ data: rep }, { data: objectives }, { data: kpis }, health] = await Promise.all([
     supabase.from("reps").select("*, depots(name)").eq("id", repId).single(),
     supabase.from("objectives").select("*").eq("rep_id", repId).neq("status", "completed").order("created_at"),
     supabase.from("kpis").select("*").eq("rep_id", repId).order("week_commencing", { ascending: false }).limit(6),
+    getRepCommercialHealth(repId, currentMonth()),
   ])
 
   if (!rep) notFound()
@@ -44,6 +49,19 @@ export default async function NewOneToOnePage({ searchParams }: { searchParams: 
       <PageHeader title={`1-to-1 — ${rep.full_name}`} subtitle={rep.depots?.name ?? "—"} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {health && (
+          <Card className="flex items-center gap-4 lg:col-span-2">
+            <ScoreRing score={health.score.totalPoints} rating={health.score.rating} size={88} />
+            <div>
+              <p className="text-xs uppercase text-zinc-500">This month&apos;s Commercial Health Score</p>
+              <RatingBadge rating={health.score.rating} size="sm" />
+              <Link href={`/reps/${repId}/scorecard`} className="mt-2 block text-sm font-medium text-zinc-900 hover:underline">
+                Full breakdown →
+              </Link>
+            </div>
+          </Card>
+        )}
+
         <Card>
           <CardHeading count={objectives?.length ?? 0}>1. Previous objectives</CardHeading>
           {!objectives || objectives.length === 0 ? (

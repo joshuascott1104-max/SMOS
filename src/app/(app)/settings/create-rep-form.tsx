@@ -11,6 +11,7 @@ export function CreateRepForm({ depots }: { depots: { id: string; name: string }
   const [depotId, setDepotId] = useState(depots[0]?.id ?? "")
   const [startDate, setStartDate] = useState("")
   const [monthlyTarget, setMonthlyTarget] = useState(0)
+  const [newCustomerTarget, setNewCustomerTarget] = useState(2)
 
   if (!open) {
     return (
@@ -39,13 +40,17 @@ export function CreateRepForm({ depots }: { depots: { id: string; name: string }
           <label className="block text-xs text-zinc-600">Monthly target (£)</label>
           <input type="number" min={0} value={monthlyTarget} onChange={(e) => setMonthlyTarget(Number(e.target.value))} className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm" />
         </div>
+        <div>
+          <label className="block text-xs text-zinc-600">New customer target (/month)</label>
+          <input type="number" min={0} value={newCustomerTarget} onChange={(e) => setNewCustomerTarget(Number(e.target.value))} className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm" />
+        </div>
       </div>
       <div className="flex gap-2">
         <Button
           disabled={pending || !fullName.trim() || !depotId}
           onClick={() =>
             startTransition(async () => {
-              await createRep({ fullName, depotId, startDate: startDate || null, monthlyTarget })
+              await createRep({ fullName, depotId, startDate: startDate || null, monthlyTarget, newCustomerTarget })
               setOpen(false)
               setFullName("")
             })

@@ -3,6 +3,9 @@ import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { PageHeader, Card, CardHeading, EmptyState, Badge } from "@/components/ui"
 import { formatDate } from "@/lib/format"
+import { ScoreRing } from "@/components/score-ring"
+import { RatingBadge } from "@/components/rating-badge"
+import { getRepCommercialHealth } from "@/lib/data/commercial-health"
 
 export default async function OneToOneDetailPage({ params }: { params: Promise<{ reviewId: string }> }) {
   const { reviewId } = await params
@@ -16,11 +19,16 @@ export default async function OneToOneDetailPage({ params }: { params: Promise<{
 
   if (!review) notFound()
 
-  const { data: objectives } = await supabase
-    .from("objectives")
-    .select("*")
-    .eq("review_id", reviewId)
-    .order("created_at")
+  const [{ data: objectives }, { data: commercialScore }] = await Promise.all([
+    supabase.from("objectives").select("*").eq("review_id", reviewId).order("created_at"),
+    review.commercial_score_id
+      ? supabase.from("commercial_scores").select("rep_id, month").eq("id", review.commercial_score_id).single()
+      : Promise.resolve({ data: null }),
+  ])
+
+  const health = commercialScore
+    ? await getRepCommercialHealth(commercialScore.rep_id, commercialScore.month)
+    : null
 
   return (
     <div>
@@ -30,6 +38,15 @@ export default async function OneToOneDetailPage({ params }: { params: Promise<{
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {health && (
+          <Card className="flex items-center gap-4 lg:col-span-2">
+            <ScoreRing score={health.score.totalPoints} rating={health.score.rating} size={88} />
+            <div>
+              <p className="text-xs uppercase text-zinc-500">Commercial Health Score discussed</p>
+              <RatingBadge rating={health.score.rating} size="sm" />
+            </div>
+          </Card>
+        )}
         <Card>
           <CardHeading>Performance summary</CardHeading>
           <p className="text-sm text-zinc-700">{review.performance_summary}</p>
@@ -49,6 +66,14 @@ export default async function OneToOneDetailPage({ params }: { params: Promise<{
         <Card>
           <CardHeading>Rep feedback</CardHeading>
           <p className="text-sm text-zinc-700">{review.rep_feedback}</p>
+        </Card>
+        <Card>
+          <CardHeading>Support required</CardHeading>
+          <p className="text-sm text-zinc-700">{review.support_required || "—"}</p>
+        </Card>
+        <Card>
+          <CardHeading>Recognition achieved</CardHeading>
+          <p className="text-sm text-zinc-700">{review.recognition_achieved || "—"}</p>
         </Card>
         <Card>
           <CardHeading count={objectives?.length ?? 0}>Objectives set</CardHeading>

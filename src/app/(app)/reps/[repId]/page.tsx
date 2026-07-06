@@ -1,9 +1,12 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getRepWorkspace } from "@/lib/data/reps"
+import { getRepCommercialHealth, currentMonth } from "@/lib/data/commercial-health"
 import { requireCurrentUser } from "@/lib/auth"
 import { PageHeader, Card, CardHeading, EmptyState, Badge, LinkButton } from "@/components/ui"
 import { formatCurrency, formatDate, labelize } from "@/lib/format"
+import { ScoreRing } from "@/components/score-ring"
+import { RatingBadge } from "@/components/rating-badge"
 import { AddManagerNoteForm } from "./manager-note-form"
 import { AddActionForm } from "./add-action-form"
 import { AddOpportunityForm } from "./add-opportunity-form"
@@ -11,14 +14,16 @@ import { AddOpportunityForm } from "./add-opportunity-form"
 export default async function RepWorkspacePage({ params }: { params: Promise<{ repId: string }> }) {
   const { repId } = await params
   const user = await requireCurrentUser()
-  const { rep, opportunities, actions, kpis, meetings, reviews, objectives, latestSubmission } =
-    await getRepWorkspace(repId)
+  const [{ rep, opportunities, actions, kpis, meetings, reviews, objectives, latestSubmission }, health] =
+    await Promise.all([getRepWorkspace(repId), getRepCommercialHealth(repId, currentMonth())])
 
   if (!rep) notFound()
 
   const openActions = actions.filter((a) => a.status === "open")
   const latestKpi = kpis[0]
   const activeOpportunities = opportunities.filter((o) => o.status === "active")
+  const pipelineValue = activeOpportunities.reduce((sum, o) => sum + Number(o.weighted_value ?? 0), 0)
+  const pipelineCoverage = rep.monthly_target > 0 ? pipelineValue / rep.monthly_target : 0
 
   return (
     <div>
@@ -68,6 +73,9 @@ export default async function RepWorkspacePage({ params }: { params: Promise<{ r
 
           <Card>
             <CardHeading count={activeOpportunities.length}>Current Top 10</CardHeading>
+            <p className={`-mt-2 mb-3 text-xs font-medium ${pipelineCoverage < 3 ? "text-red-600" : "text-emerald-600"}`}>
+              Pipeline coverage {pipelineCoverage.toFixed(1)}× monthly target (minimum 3×)
+            </p>
             {activeOpportunities.length === 0 ? (
               <EmptyState>No active strategic opportunities yet.</EmptyState>
             ) : (
@@ -145,6 +153,22 @@ export default async function RepWorkspacePage({ params }: { params: Promise<{ r
         </div>
 
         <div className="space-y-6">
+          {health && (
+            <Card className="flex items-center gap-4">
+              <ScoreRing score={health.score.totalPoints} rating={health.score.rating} size={88} />
+              <div>
+                <p className="text-xs uppercase text-zinc-500">Commercial Health</p>
+                <RatingBadge rating={health.score.rating} size="sm" />
+                <Link
+                  href={`/reps/${repId}/scorecard`}
+                  className="mt-2 block text-sm font-medium text-zinc-900 hover:underline"
+                >
+                  Full scorecard →
+                </Link>
+              </div>
+            </Card>
+          )}
+
           <Card>
             <CardHeading>KPI summary</CardHeading>
             {!latestKpi ? (

@@ -38,6 +38,8 @@ export function OneToOneForm({
   const [repFeedback, setRepFeedback] = useState("")
   const [overallRating, setOverallRating] = useState(3)
   const [nextReviewDate, setNextReviewDate] = useState("")
+  const [supportRequired, setSupportRequired] = useState("")
+  const [recognitionAchieved, setRecognitionAchieved] = useState("")
 
   const [objectiveStatuses, setObjectiveStatuses] = useState<Record<string, { status: string; notes: string }>>(
     Object.fromEntries(existingObjectives.map((o) => [o.id, { status: o.status, notes: o.progress_notes ?? "" }]))
@@ -156,6 +158,28 @@ export function OneToOneForm({
               value={nextReviewDate}
               onChange={(e) => setNextReviewDate(e.target.value)}
               className="rounded-md border border-zinc-300 px-2 py-1 text-sm"
+            />
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div>
+            <label className="block text-xs font-medium text-zinc-600">Support required</label>
+            <textarea
+              value={supportRequired}
+              onChange={(e) => setSupportRequired(e.target.value)}
+              rows={2}
+              className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm"
+              placeholder="What support does the rep need from their manager or the business?"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-zinc-600">Recognition achieved</label>
+            <textarea
+              value={recognitionAchieved}
+              onChange={(e) => setRecognitionAchieved(e.target.value)}
+              rows={2}
+              className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm"
+              placeholder="Standards or milestones worth recognising this month"
             />
           </div>
         </div>
@@ -308,6 +332,8 @@ export function OneToOneForm({
                     repFeedback,
                     overallRating,
                     nextReviewDate: nextReviewDate || null,
+                    supportRequired,
+                    recognitionAchieved,
                     objectiveUpdates: Object.entries(objectiveStatuses).map(([id, v]) => ({
                       id,
                       status: v.status,

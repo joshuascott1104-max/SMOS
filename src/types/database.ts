@@ -101,6 +101,60 @@ export type Database = {
           },
         ]
       }
+      commercial_scores: {
+        Row: {
+          created_at: string
+          crm_discipline_pct: number
+          follow_up_compliance_pct: number
+          gate_progression_pct: number
+          id: string
+          manager_id: string
+          manager_notes: string | null
+          month: string
+          new_customers_won: number
+          rep_id: string
+        }
+        Insert: {
+          created_at?: string
+          crm_discipline_pct?: number
+          follow_up_compliance_pct?: number
+          gate_progression_pct?: number
+          id?: string
+          manager_id: string
+          manager_notes?: string | null
+          month: string
+          new_customers_won?: number
+          rep_id: string
+        }
+        Update: {
+          created_at?: string
+          crm_discipline_pct?: number
+          follow_up_compliance_pct?: number
+          gate_progression_pct?: number
+          id?: string
+          manager_id?: string
+          manager_notes?: string | null
+          month?: string
+          new_customers_won?: number
+          rep_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commercial_scores_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commercial_scores_rep_id_fkey"
+            columns: ["rep_id"]
+            isOneToOne: false
+            referencedRelation: "reps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       depots: {
         Row: {
           created_at: string
@@ -200,11 +254,14 @@ export type Database = {
           calls: number
           conversion_rate: number | null
           created_at: string
+          discovery_meetings: number
           forecast_value: number
           id: string
           manager_id: string
           manager_notes: string | null
           performance_score: number | null
+          proposals_issued: number
+          qualified_opportunities: number
           quotes: number
           rep_id: string
           revenue_won: number
@@ -217,11 +274,14 @@ export type Database = {
           calls?: number
           conversion_rate?: number | null
           created_at?: string
+          discovery_meetings?: number
           forecast_value?: number
           id?: string
           manager_id: string
           manager_notes?: string | null
           performance_score?: number | null
+          proposals_issued?: number
+          qualified_opportunities?: number
           quotes?: number
           rep_id: string
           revenue_won?: number
@@ -234,11 +294,14 @@ export type Database = {
           calls?: number
           conversion_rate?: number | null
           created_at?: string
+          discovery_meetings?: number
           forecast_value?: number
           id?: string
           manager_id?: string
           manager_notes?: string | null
           performance_score?: number | null
+          proposals_issued?: number
+          qualified_opportunities?: number
           quotes?: number
           rep_id?: string
           revenue_won?: number
@@ -415,6 +478,7 @@ export type Database = {
       }
       one_to_one_reviews: {
         Row: {
+          commercial_score_id: string | null
           created_at: string
           development_areas: string | null
           id: string
@@ -424,12 +488,15 @@ export type Database = {
           overall_rating: number | null
           performance_summary: string | null
           period_covered: string | null
+          recognition_achieved: string | null
           rep_feedback: string | null
           rep_id: string
           review_date: string
           strengths: string | null
+          support_required: string | null
         }
         Insert: {
+          commercial_score_id?: string | null
           created_at?: string
           development_areas?: string | null
           id?: string
@@ -439,12 +506,15 @@ export type Database = {
           overall_rating?: number | null
           performance_summary?: string | null
           period_covered?: string | null
+          recognition_achieved?: string | null
           rep_feedback?: string | null
           rep_id: string
           review_date: string
           strengths?: string | null
+          support_required?: string | null
         }
         Update: {
+          commercial_score_id?: string | null
           created_at?: string
           development_areas?: string | null
           id?: string
@@ -454,12 +524,21 @@ export type Database = {
           overall_rating?: number | null
           performance_summary?: string | null
           period_covered?: string | null
+          recognition_achieved?: string | null
           rep_feedback?: string | null
           rep_id?: string
           review_date?: string
           strengths?: string | null
+          support_required?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "one_to_one_reviews_commercial_score_id_fkey"
+            columns: ["commercial_score_id"]
+            isOneToOne: false
+            referencedRelation: "commercial_scores"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "one_to_one_reviews_manager_id_fkey"
             columns: ["manager_id"]
@@ -484,6 +563,7 @@ export type Database = {
           id: string
           manager_id: string
           monthly_target: number
+          new_customer_target: number
           notes: string | null
           start_date: string | null
           status: string
@@ -495,6 +575,7 @@ export type Database = {
           id?: string
           manager_id: string
           monthly_target?: number
+          new_customer_target?: number
           notes?: string | null
           start_date?: string | null
           status?: string
@@ -506,6 +587,7 @@ export type Database = {
           id?: string
           manager_id?: string
           monthly_target?: number
+          new_customer_target?: number
           notes?: string | null
           start_date?: string | null
           status?: string

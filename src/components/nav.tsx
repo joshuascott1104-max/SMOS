@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { href: "/today", label: "Today" },
   { href: "/team", label: "Team" },
   { href: "/opportunities", label: "Pipeline" },
+  { href: "/commercial-health", label: "Health Score" },
   { href: "/meetings", label: "Meetings" },
   { href: "/actions", label: "Actions" },
   { href: "/reports", label: "Reports" },
