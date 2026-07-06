@@ -10,6 +10,7 @@ import { RatingBadge } from "@/components/rating-badge"
 import { AddManagerNoteForm } from "./manager-note-form"
 import { AddActionForm } from "./add-action-form"
 import { AddOpportunityForm } from "./add-opportunity-form"
+import { OpportunityRow } from "./opportunity-row"
 
 export default async function RepWorkspacePage({ params }: { params: Promise<{ repId: string }> }) {
   const { repId } = await params
@@ -88,20 +89,12 @@ export default async function RepWorkspacePage({ params }: { params: Promise<{ r
                     <th className="py-2 pr-2">Prob.</th>
                     <th className="py-2 pr-2">Weighted</th>
                     <th className="py-2 pr-2">Support</th>
+                    <th className="py-2 pr-2" />
                   </tr>
                 </thead>
                 <tbody>
                   {activeOpportunities.map((o) => (
-                    <tr key={o.id} className="border-b border-zinc-100 last:border-0">
-                      <td className="py-2 pr-2 font-medium text-zinc-900">{o.company_name}</td>
-                      <td className="py-2 pr-2">{formatCurrency(o.estimated_monthly_revenue)}</td>
-                      <td className="py-2 pr-2">
-                        <Badge value={o.stage} />
-                      </td>
-                      <td className="py-2 pr-2">{o.probability}%</td>
-                      <td className="py-2 pr-2">{formatCurrency(o.weighted_value)}</td>
-                      <td className="py-2 pr-2">{o.support_required ? <Badge value="high" label="Yes" /> : "—"}</td>
-                    </tr>
+                    <OpportunityRow key={o.id} opportunity={o} repId={repId} />
                   ))}
                 </tbody>
               </table>

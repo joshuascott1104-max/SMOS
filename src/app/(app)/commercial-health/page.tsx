@@ -2,7 +2,7 @@ import Link from "next/link"
 import { getTeamCommercialHealth, currentMonth } from "@/lib/data/commercial-health"
 import { PageHeader, Card, EmptyState } from "@/components/ui"
 import { RatingBadge } from "@/components/rating-badge"
-import { ScoreRing } from "@/components/score-ring"
+import { STATUS_COLORS } from "@/lib/scoring"
 
 function shiftMonth(month: string, delta: number): string {
   const d = new Date(month)
@@ -84,9 +84,15 @@ export default async function CommercialHealthPage({
                       </Link>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <ScoreRing score={r.score.totalPoints} rating={r.score.rating} size={44} />
-                      </div>
+                      <span
+                        className="inline-flex h-8 min-w-[2.5rem] items-center justify-center rounded-md px-2 text-sm font-semibold"
+                        style={{
+                          backgroundColor: `${STATUS_COLORS[r.score.rating.statusColor]}1a`,
+                          color: STATUS_COLORS[r.score.rating.statusColor],
+                        }}
+                      >
+                        {Math.round(r.score.totalPoints)}
+                      </span>
                     </td>
                     <td className="px-4 py-3">
                       <RatingBadge rating={r.score.rating} size="sm" />

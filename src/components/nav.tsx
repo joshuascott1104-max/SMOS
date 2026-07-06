@@ -14,7 +14,7 @@ const NAV_ITEMS = [
   { href: "/settings", label: "Settings" },
 ]
 
-export function Nav() {
+export function Nav({ overdueCount = 0 }: { overdueCount?: number }) {
   const pathname = usePathname()
 
   return (
@@ -25,11 +25,16 @@ export function Nav() {
           <Link
             key={item.href}
             href={item.href}
-            className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            className={`flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               isActive ? "bg-zinc-900 text-white" : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
             }`}
           >
             {item.label}
+            {item.href === "/actions" && overdueCount > 0 && (
+              <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-semibold text-white">
+                {overdueCount}
+              </span>
+            )}
           </Link>
         )
       })}

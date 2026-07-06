@@ -3,6 +3,18 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { requireCurrentUser } from "@/lib/auth"
+import type { Tables } from "@/types/database"
+
+export async function getKpiEntry(repId: string, weekCommencing: string): Promise<Tables<"kpis"> | null> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from("kpis")
+    .select("*")
+    .eq("rep_id", repId)
+    .eq("week_commencing", weekCommencing)
+    .maybeSingle()
+  return data
+}
 
 export async function upsertKpi(input: {
   repId: string

@@ -1,10 +1,17 @@
 import { requireCurrentUser } from "@/lib/auth"
+import { createClient } from "@/lib/supabase/server"
 import { Nav } from "@/components/nav"
 import { SignOutButton } from "@/components/sign-out-button"
 import { labelize } from "@/lib/format"
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireCurrentUser()
+  const supabase = await createClient()
+  const { count: overdueCount } = await supabase
+    .from("actions")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "open")
+    .lt("due_date", new Date().toISOString().slice(0, 10))
 
   return (
     <div className="flex min-h-screen flex-1">
@@ -14,7 +21,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <p className="text-lg font-semibold text-zinc-900">SMOS</p>
             <p className="text-xs text-zinc-500">Sales Manager OS</p>
           </div>
-          <Nav />
+          <Nav overdueCount={overdueCount ?? 0} />
         </div>
         <div className="border-t border-zinc-200 px-3 pt-4">
           <p className="text-sm font-medium text-zinc-900">{user.full_name}</p>

@@ -61,6 +61,7 @@ export default async function OpportunitiesPage({
                 <th className="px-4 py-3">Next action</th>
                 <th className="px-4 py-3">Support</th>
                 <th className="px-4 py-3">Last reviewed</th>
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
@@ -85,6 +86,11 @@ export default async function OpportunitiesPage({
                     {o.support_required ? <Badge value="high" label="Required" /> : "—"}
                   </td>
                   <td className="px-4 py-3 text-zinc-600">{formatDate(o.last_reviewed)}</td>
+                  <td className="px-4 py-3">
+                    <Link href={`/reps/${o.rep_id}`} className="text-zinc-900 hover:underline">
+                      Edit →
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>
