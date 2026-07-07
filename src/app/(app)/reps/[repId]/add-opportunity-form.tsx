@@ -19,11 +19,15 @@ export function AddOpportunityForm({
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [companyName, setCompanyName] = useState("")
+  const [currentProvider, setCurrentProvider] = useState("")
   const [revenue, setRevenue] = useState(0)
+  const [gp, setGp] = useState(0)
   const [stage, setStage] = useState("data_received")
   const [probability, setProbability] = useState(50)
   const [expectedCloseMonth, setExpectedCloseMonth] = useState("")
+  const [lastAction, setLastAction] = useState("")
   const [nextAction, setNextAction] = useState("")
+  const [nextActionDate, setNextActionDate] = useState("")
   const [supportRequired, setSupportRequired] = useState(false)
   const [supportReason, setSupportReason] = useState("")
 
@@ -37,12 +41,20 @@ export function AddOpportunityForm({
 
   return (
     <div className="space-y-2 rounded-md border border-zinc-200 bg-zinc-50 p-3">
-      <input
-        value={companyName}
-        onChange={(e) => setCompanyName(e.target.value)}
-        placeholder="Company name"
-        className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm"
-      />
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          value={companyName}
+          onChange={(e) => setCompanyName(e.target.value)}
+          placeholder="Company name"
+          className="rounded-md border border-zinc-300 px-2 py-1 text-sm"
+        />
+        <input
+          value={currentProvider}
+          onChange={(e) => setCurrentProvider(e.target.value)}
+          placeholder="Current provider"
+          className="rounded-md border border-zinc-300 px-2 py-1 text-sm"
+        />
+      </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className="block text-xs text-zinc-600">Est. monthly revenue (£)</label>
@@ -51,6 +63,16 @@ export function AddOpportunityForm({
             min={0}
             value={revenue}
             onChange={(e) => setRevenue(Number(e.target.value))}
+            className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-zinc-600">Est. monthly GP (£)</label>
+          <input
+            type="number"
+            min={0}
+            value={gp}
+            onChange={(e) => setGp(Number(e.target.value))}
             className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm"
           />
         </div>
@@ -88,6 +110,23 @@ export function AddOpportunityForm({
             className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm"
           />
         </div>
+        <div>
+          <label className="block text-xs text-zinc-600">Next action date</label>
+          <input
+            type="date"
+            value={nextActionDate}
+            onChange={(e) => setNextActionDate(e.target.value)}
+            className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm"
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-xs text-zinc-600">Last action</label>
+        <input
+          value={lastAction}
+          onChange={(e) => setLastAction(e.target.value)}
+          className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm"
+        />
       </div>
       <div>
         <label className="block text-xs text-zinc-600">Next action</label>
@@ -124,10 +163,14 @@ export function AddOpportunityForm({
                   repId,
                   depotId,
                   estimatedMonthlyRevenue: revenue,
+                  estimatedMonthlyGp: gp,
                   stage,
                   probability,
                   expectedCloseMonth: expectedCloseMonth ? `${expectedCloseMonth}-01` : null,
+                  currentProvider: currentProvider || null,
+                  lastAction: lastAction || null,
                   nextAction,
+                  nextActionDate: nextActionDate || null,
                   supportRequired,
                   supportReason: supportRequired ? supportReason : null,
                   managerNotes: null,

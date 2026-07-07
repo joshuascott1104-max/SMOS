@@ -15,17 +15,26 @@ export function OpportunityRow({ opportunity, repId }: { opportunity: Tables<"st
 
   const [companyName, setCompanyName] = useState(opportunity.company_name)
   const [revenue, setRevenue] = useState(opportunity.estimated_monthly_revenue)
+  const [gp, setGp] = useState(opportunity.estimated_monthly_gp ?? 0)
   const [stage, setStage] = useState(opportunity.stage)
   const [probability, setProbability] = useState(opportunity.probability)
   const [expectedCloseMonth, setExpectedCloseMonth] = useState(opportunity.expected_close_month?.slice(0, 7) ?? "")
+  const [currentProvider, setCurrentProvider] = useState(opportunity.current_provider ?? "")
+  const [lastAction, setLastAction] = useState(opportunity.last_action ?? "")
   const [nextAction, setNextAction] = useState(opportunity.next_action ?? "")
+  const [nextActionDate, setNextActionDate] = useState(opportunity.next_action_date ?? "")
   const [supportRequired, setSupportRequired] = useState(opportunity.support_required)
   const [supportReason, setSupportReason] = useState(opportunity.support_reason ?? "")
 
   if (!editing) {
     return (
       <tr className="border-b border-zinc-100 last:border-0">
-        <td className="py-2 pr-2 font-medium text-zinc-900">{opportunity.company_name}</td>
+        <td className="py-2 pr-2 font-medium text-zinc-900">
+          {opportunity.company_name}
+          {opportunity.week_commencing && (
+            <p className="text-xs font-normal text-zinc-400">Week of {formatDate(opportunity.week_commencing)}</p>
+          )}
+        </td>
         <td className="py-2 pr-2">{formatCurrency(opportunity.estimated_monthly_revenue)}</td>
         <td className="py-2 pr-2">
           <Badge value={opportunity.stage} />
@@ -54,10 +63,25 @@ export function OpportunityRow({ opportunity, repId }: { opportunity: Tables<"st
               className="col-span-2 rounded-md border border-zinc-300 px-2 py-1 text-sm md:col-span-1"
             />
             <input
+              value={currentProvider}
+              onChange={(e) => setCurrentProvider(e.target.value)}
+              placeholder="Current provider"
+              className="rounded-md border border-zinc-300 px-2 py-1 text-sm"
+            />
+            <input
               type="number"
               min={0}
               value={revenue}
               onChange={(e) => setRevenue(Number(e.target.value))}
+              placeholder="Est. monthly revenue"
+              className="rounded-md border border-zinc-300 px-2 py-1 text-sm"
+            />
+            <input
+              type="number"
+              min={0}
+              value={gp}
+              onChange={(e) => setGp(Number(e.target.value))}
+              placeholder="Est. monthly GP"
               className="rounded-md border border-zinc-300 px-2 py-1 text-sm"
             />
             <select value={stage} onChange={(e) => setStage(e.target.value)} className="rounded-md border border-zinc-300 px-2 py-1 text-sm">
@@ -73,6 +97,7 @@ export function OpportunityRow({ opportunity, repId }: { opportunity: Tables<"st
               max={100}
               value={probability}
               onChange={(e) => setProbability(Number(e.target.value))}
+              placeholder="Probability %"
               className="rounded-md border border-zinc-300 px-2 py-1 text-sm"
             />
             <input
@@ -82,10 +107,22 @@ export function OpportunityRow({ opportunity, repId }: { opportunity: Tables<"st
               className="rounded-md border border-zinc-300 px-2 py-1 text-sm"
             />
             <input
+              type="date"
+              value={nextActionDate}
+              onChange={(e) => setNextActionDate(e.target.value)}
+              className="rounded-md border border-zinc-300 px-2 py-1 text-sm"
+            />
+            <input
+              value={lastAction}
+              onChange={(e) => setLastAction(e.target.value)}
+              placeholder="Last action"
+              className="col-span-2 rounded-md border border-zinc-300 px-2 py-1 text-sm"
+            />
+            <input
               value={nextAction}
               onChange={(e) => setNextAction(e.target.value)}
               placeholder="Next action"
-              className="col-span-2 rounded-md border border-zinc-300 px-2 py-1 text-sm md:col-span-2"
+              className="col-span-2 rounded-md border border-zinc-300 px-2 py-1 text-sm"
             />
           </div>
           <label className="flex items-center gap-2 text-xs text-zinc-600">
@@ -113,10 +150,14 @@ export function OpportunityRow({ opportunity, repId }: { opportunity: Tables<"st
                     await updateOpportunity(opportunity.id, repId, {
                       companyName,
                       estimatedMonthlyRevenue: revenue,
+                      estimatedMonthlyGp: gp,
                       stage,
                       probability,
                       expectedCloseMonth: expectedCloseMonth ? `${expectedCloseMonth}-01` : null,
+                      currentProvider: currentProvider || null,
+                      lastAction: lastAction || null,
                       nextAction,
+                      nextActionDate: nextActionDate || null,
                       supportRequired,
                       supportReason: supportRequired ? supportReason : null,
                     })

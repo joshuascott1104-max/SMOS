@@ -686,13 +686,17 @@ export type Database = {
         Row: {
           company_name: string
           created_at: string
+          current_provider: string | null
           depot_id: string
+          estimated_monthly_gp: number | null
           estimated_monthly_revenue: number
           expected_close_month: string | null
           id: string
+          last_action: string | null
           last_reviewed: string | null
           manager_notes: string | null
           next_action: string | null
+          next_action_date: string | null
           probability: number
           rep_id: string
           stage: string
@@ -700,18 +704,23 @@ export type Database = {
           submission_id: string | null
           support_reason: string | null
           support_required: boolean
+          week_commencing: string | null
           weighted_value: number | null
         }
         Insert: {
           company_name: string
           created_at?: string
+          current_provider?: string | null
           depot_id: string
+          estimated_monthly_gp?: number | null
           estimated_monthly_revenue?: number
           expected_close_month?: string | null
           id?: string
+          last_action?: string | null
           last_reviewed?: string | null
           manager_notes?: string | null
           next_action?: string | null
+          next_action_date?: string | null
           probability?: number
           rep_id: string
           stage?: string
@@ -719,18 +728,23 @@ export type Database = {
           submission_id?: string | null
           support_reason?: string | null
           support_required?: boolean
+          week_commencing?: string | null
           weighted_value?: number | null
         }
         Update: {
           company_name?: string
           created_at?: string
+          current_provider?: string | null
           depot_id?: string
+          estimated_monthly_gp?: number | null
           estimated_monthly_revenue?: number
           expected_close_month?: string | null
           id?: string
+          last_action?: string | null
           last_reviewed?: string | null
           manager_notes?: string | null
           next_action?: string | null
+          next_action_date?: string | null
           probability?: number
           rep_id?: string
           stage?: string
@@ -738,6 +752,7 @@ export type Database = {
           submission_id?: string | null
           support_reason?: string | null
           support_required?: boolean
+          week_commencing?: string | null
           weighted_value?: number | null
         }
         Relationships: [

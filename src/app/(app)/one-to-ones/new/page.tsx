@@ -35,14 +35,24 @@ export default async function NewOneToOnePage({ searchParams }: { searchParams: 
     )
   }
 
-  const [{ data: rep }, { data: objectives }, { data: kpis }, health] = await Promise.all([
+  const [{ data: rep }, { data: objectives }, { data: kpis }, health, { data: top10 }] = await Promise.all([
     supabase.from("reps").select("*, depots(name)").eq("id", repId).single(),
     supabase.from("objectives").select("*").eq("rep_id", repId).neq("status", "completed").order("created_at"),
     supabase.from("kpis").select("*").eq("rep_id", repId).order("week_commencing", { ascending: false }).limit(6),
     getRepCommercialHealth(repId, currentMonth()),
+    supabase
+      .from("strategic_opportunities")
+      .select("*")
+      .eq("rep_id", repId)
+      .eq("status", "active")
+      .order("week_commencing", { ascending: false })
+      .order("weighted_value", { ascending: false }),
   ])
 
   if (!rep) notFound()
+
+  const latestWeek = top10?.[0]?.week_commencing ?? null
+  const latestTop10 = latestWeek ? (top10 ?? []).filter((o) => o.week_commencing === latestWeek) : (top10 ?? [])
 
   return (
     <div>
@@ -99,6 +109,40 @@ export default async function NewOneToOnePage({ searchParams }: { searchParams: 
                     <td className="py-1 pr-2 text-zinc-600">{k.calls}</td>
                     <td className="py-1 pr-2 text-zinc-600">{k.wins}</td>
                     <td className="py-1 pr-2 text-zinc-600">{formatCurrency(k.revenue_won)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeading count={latestTop10.length}>
+            Current Top 10{latestWeek ? ` — week of ${formatDate(latestWeek)}` : ""}
+          </CardHeading>
+          {latestTop10.length === 0 ? (
+            <EmptyState>No active Top 10 opportunities for this rep yet.</EmptyState>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase text-zinc-500">
+                  <th className="py-1 pr-2">Company</th>
+                  <th className="py-1 pr-2">Value</th>
+                  <th className="py-1 pr-2">Stage</th>
+                  <th className="py-1 pr-2">Prob.</th>
+                  <th className="py-1 pr-2">Next action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {latestTop10.map((o) => (
+                  <tr key={o.id}>
+                    <td className="py-1 pr-2 font-medium text-zinc-900">{o.company_name}</td>
+                    <td className="py-1 pr-2 text-zinc-600">{formatCurrency(o.estimated_monthly_revenue)}</td>
+                    <td className="py-1 pr-2">
+                      <Badge value={o.stage} />
+                    </td>
+                    <td className="py-1 pr-2 text-zinc-600">{o.probability}%</td>
+                    <td className="py-1 pr-2 text-zinc-600">{o.next_action ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>

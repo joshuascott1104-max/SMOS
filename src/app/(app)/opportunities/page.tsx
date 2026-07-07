@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { listOpportunities, type OpportunityView } from "@/lib/data/opportunities"
-import { PageHeader, Card, Badge, EmptyState } from "@/components/ui"
+import { requireCurrentUser } from "@/lib/auth"
+import { PageHeader, Card, Badge, EmptyState, LinkButton } from "@/components/ui"
 import { formatCurrency, formatDate } from "@/lib/format"
 
 const VIEWS: { key: OpportunityView; label: string }[] = [
@@ -20,13 +21,15 @@ export default async function OpportunitiesPage({
   const { view: rawView } = await searchParams
   const view = (VIEWS.some((v) => v.key === rawView) ? rawView : "highest_value") as OpportunityView
 
-  const opportunities = await listOpportunities(view)
+  const [opportunities, user] = await Promise.all([listOpportunities(view), requireCurrentUser()])
+  const canBulkImport = user.role === "sales_manager" || user.role === "admin"
 
   return (
     <div>
       <PageHeader
         title="Strategic Opportunities"
         subtitle="The management layer's Top 10 view — not the full CRM pipeline."
+        actions={canBulkImport ? <LinkButton href="/opportunities/import">Bulk Import Top 10</LinkButton> : undefined}
       />
 
       <div className="mb-4 flex flex-wrap gap-2">
@@ -67,7 +70,12 @@ export default async function OpportunitiesPage({
             <tbody>
               {opportunities.map((o) => (
                 <tr key={o.id} className="border-b border-zinc-100 last:border-0 hover:bg-zinc-50">
-                  <td className="px-4 py-3 font-medium text-zinc-900">{o.company_name}</td>
+                  <td className="px-4 py-3 font-medium text-zinc-900">
+                    {o.company_name}
+                    {o.week_commencing && (
+                      <p className="text-xs font-normal text-zinc-400">Week of {formatDate(o.week_commencing)}</p>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <Link href={`/reps/${o.rep_id}`} className="text-zinc-600 hover:underline">
                       {o.reps?.full_name}
