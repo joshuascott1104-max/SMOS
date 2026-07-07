@@ -609,6 +609,79 @@ export type Database = {
           },
         ]
       }
+      review_scores: {
+        Row: {
+          accountability_score: number
+          agreed_actions_score: number
+          created_at: string
+          crm_discipline_score: number
+          follow_up_quality_score: number
+          id: string
+          manager_id: string
+          notes: string | null
+          performance_score: number
+          pipeline_quality_score: number
+          rating_band: string | null
+          rep_id: string
+          review_id: string
+          total_score: number | null
+        }
+        Insert: {
+          accountability_score: number
+          agreed_actions_score: number
+          created_at?: string
+          crm_discipline_score: number
+          follow_up_quality_score: number
+          id?: string
+          manager_id: string
+          notes?: string | null
+          performance_score: number
+          pipeline_quality_score: number
+          rating_band?: string | null
+          rep_id: string
+          review_id: string
+          total_score?: number | null
+        }
+        Update: {
+          accountability_score?: number
+          agreed_actions_score?: number
+          created_at?: string
+          crm_discipline_score?: number
+          follow_up_quality_score?: number
+          id?: string
+          manager_id?: string
+          notes?: string | null
+          performance_score?: number
+          pipeline_quality_score?: number
+          rating_band?: string | null
+          rep_id?: string
+          review_id?: string
+          total_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_scores_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_scores_rep_id_fkey"
+            columns: ["rep_id"]
+            isOneToOne: false
+            referencedRelation: "reps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_scores_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: true
+            referencedRelation: "one_to_one_reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       strategic_opportunities: {
         Row: {
           company_name: string

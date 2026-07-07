@@ -5,6 +5,17 @@ import { useRouter } from "next/navigation"
 import { createOneToOne } from "@/lib/mutations/one-to-ones"
 import { Card, CardHeading, Button } from "@/components/ui"
 import type { Tables } from "@/types/database"
+import type { ReviewScoreInputs } from "@/lib/review-scoring"
+import { ReviewScoringSection } from "./review-score-section"
+
+const DEFAULT_REVIEW_SCORES: ReviewScoreInputs = {
+  performance: 3,
+  pipeline_quality: 3,
+  crm_discipline: 3,
+  follow_up_quality: 3,
+  accountability: 3,
+  agreed_actions_completed: 3,
+}
 
 type NewAction = {
   title: string
@@ -19,12 +30,10 @@ type NewObjective = { objective: string; successMeasure: string; dueDate: string
 export function OneToOneForm({
   repId,
   managerId,
-  reps,
   existingObjectives,
 }: {
   repId: string
   managerId: string
-  reps: { id: string; full_name: string }[]
   existingObjectives: Tables<"objectives">[]
 }) {
   const router = useRouter()
@@ -40,6 +49,8 @@ export function OneToOneForm({
   const [nextReviewDate, setNextReviewDate] = useState("")
   const [supportRequired, setSupportRequired] = useState("")
   const [recognitionAchieved, setRecognitionAchieved] = useState("")
+  const [reviewScores, setReviewScores] = useState<ReviewScoreInputs>(DEFAULT_REVIEW_SCORES)
+  const [reviewScoreNotes, setReviewScoreNotes] = useState("")
 
   const [objectiveStatuses, setObjectiveStatuses] = useState<Record<string, { status: string; notes: string }>>(
     Object.fromEntries(existingObjectives.map((o) => [o.id, { status: o.status, notes: o.progress_notes ?? "" }]))
@@ -53,8 +64,15 @@ export function OneToOneForm({
 
   return (
     <div className="space-y-6">
+      <ReviewScoringSection
+        scores={reviewScores}
+        onScoresChange={setReviewScores}
+        notes={reviewScoreNotes}
+        onNotesChange={setReviewScoreNotes}
+      />
+
       <Card>
-        <CardHeading>3. Development discussion</CardHeading>
+        <CardHeading>4. Development discussion</CardHeading>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div>
             <label className="block text-xs font-medium text-zinc-600">Performance summary</label>
@@ -118,7 +136,7 @@ export function OneToOneForm({
       </Card>
 
       <Card>
-        <CardHeading>4. Manager &amp; rep feedback</CardHeading>
+        <CardHeading>5. Manager &amp; rep feedback</CardHeading>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div>
             <label className="block text-xs font-medium text-zinc-600">Manager feedback</label>
@@ -186,7 +204,7 @@ export function OneToOneForm({
       </Card>
 
       <Card>
-        <CardHeading count={totalActiveObjectives}>5. New objectives (max 3 active)</CardHeading>
+        <CardHeading count={totalActiveObjectives}>6. New objectives (max 3 active)</CardHeading>
         <div className="space-y-2">
           {newObjectives.map((o, i) => (
             <div key={i} className="grid grid-cols-12 gap-2">
@@ -240,7 +258,7 @@ export function OneToOneForm({
       </Card>
 
       <Card>
-        <CardHeading count={newActions.length}>6. Create actions</CardHeading>
+        <CardHeading count={newActions.length}>7. Create actions</CardHeading>
         <div className="space-y-2">
           {newActions.map((a, i) => (
             <div key={i} className="grid grid-cols-12 gap-2">
@@ -334,6 +352,8 @@ export function OneToOneForm({
                     nextReviewDate: nextReviewDate || null,
                     supportRequired,
                     recognitionAchieved,
+                    reviewScores,
+                    reviewScoreNotes,
                     objectiveUpdates: Object.entries(objectiveStatuses).map(([id, v]) => ({
                       id,
                       status: v.status,

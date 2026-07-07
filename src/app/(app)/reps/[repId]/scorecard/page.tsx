@@ -2,11 +2,21 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getRepCommercialHealth, currentMonth } from "@/lib/data/commercial-health"
 import { suggestedCoachingFocus, weakCategories } from "@/lib/scoring"
+import { getRepReviewScoreHistory } from "@/lib/data/review-scores"
+import { ratingForReviewScore, trendBetween } from "@/lib/review-scoring"
 import { PageHeader, Card, CardHeading, EmptyState } from "@/components/ui"
 import { ScoreRing } from "@/components/score-ring"
 import { RatingBadge } from "@/components/rating-badge"
 import { CategoryMeter } from "@/components/category-meter"
+import { formatDate } from "@/lib/format"
 import { ManualScoreForm } from "./manual-score-form"
+
+const TREND_LABEL: Record<string, string> = {
+  improving: "Improving",
+  flat: "Flat",
+  declining: "Declining",
+  not_enough_data: "Not enough data yet",
+}
 
 function shiftMonth(month: string, delta: number): string {
   const d = new Date(month)
@@ -31,12 +41,18 @@ export default async function RepScorecardPage({
   const { month: rawMonth } = await searchParams
   const month = rawMonth ?? currentMonth()
 
-  const health = await getRepCommercialHealth(repId, month)
+  const [health, reviewHistory] = await Promise.all([
+    getRepCommercialHealth(repId, month),
+    getRepReviewScoreHistory(repId, 2),
+  ])
   if (!health) notFound()
 
   const { score } = health
   const weak = weakCategories(score.categories)
   const focus = suggestedCoachingFocus(score.categories)
+
+  const [latestReview, previousReview] = reviewHistory
+  const trend = trendBetween(latestReview?.totalScore ?? null, previousReview?.totalScore ?? null)
 
   return (
     <div>
@@ -87,6 +103,38 @@ export default async function RepScorecardPage({
                   <li key={f}>{f}</li>
                 ))}
               </ul>
+            </div>
+          )}
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <CardHeading>1-to-1 review score (coaching tool, separate from Commercial Health)</CardHeading>
+          {!latestReview ? (
+            <EmptyState>No 1-to-1 review scores recorded yet.</EmptyState>
+          ) : (
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+              <div className="flex flex-none flex-col items-center gap-1">
+                <RatingBadge rating={ratingForReviewScore(latestReview.totalScore)} size="sm" />
+                <p className="text-lg font-semibold text-zinc-900">{latestReview.totalScore} / 30</p>
+                <p className="text-xs text-zinc-500">Latest — {formatDate(latestReview.reviewDate)}</p>
+              </div>
+              {previousReview && (
+                <div className="flex flex-none flex-col items-center gap-1">
+                  <RatingBadge rating={ratingForReviewScore(previousReview.totalScore)} size="sm" />
+                  <p className="text-lg font-semibold text-zinc-500">{previousReview.totalScore} / 30</p>
+                  <p className="text-xs text-zinc-500">Previous — {formatDate(previousReview.reviewDate)}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs uppercase tracking-wide text-zinc-500">Trend</p>
+                <p className="text-sm font-medium text-zinc-900">{TREND_LABEL[trend]}</p>
+                <Link
+                  href={`/one-to-ones/${latestReview.reviewId}`}
+                  className="mt-1 block text-sm font-medium text-zinc-900 hover:underline"
+                >
+                  View full review →
+                </Link>
+              </div>
             </div>
           )}
         </Card>

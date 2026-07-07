@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient } from "@/lib/supabase/server"
 import { requireCurrentUser } from "@/lib/auth"
+import type { ReviewScoreInputs } from "@/lib/review-scoring"
 
 export type OneToOneInput = {
   repId: string
@@ -17,6 +18,8 @@ export type OneToOneInput = {
   nextReviewDate: string | null
   supportRequired: string
   recognitionAchieved: string
+  reviewScores: ReviewScoreInputs
+  reviewScoreNotes: string
   objectiveUpdates: { id: string; status: string; progressNotes: string }[]
   newObjectives: { objective: string; successMeasure: string; dueDate: string | null }[]
   newActions: {
@@ -71,6 +74,20 @@ export async function createOneToOne(input: OneToOneInput) {
 
   if (error) throw new Error(error.message)
 
+  const { error: scoreError } = await supabase.from("review_scores").insert({
+    review_id: review.id,
+    rep_id: input.repId,
+    manager_id: user.id,
+    performance_score: input.reviewScores.performance,
+    pipeline_quality_score: input.reviewScores.pipeline_quality,
+    crm_discipline_score: input.reviewScores.crm_discipline,
+    follow_up_quality_score: input.reviewScores.follow_up_quality,
+    accountability_score: input.reviewScores.accountability,
+    agreed_actions_score: input.reviewScores.agreed_actions_completed,
+    notes: input.reviewScoreNotes || null,
+  })
+  if (scoreError) throw new Error(scoreError.message)
+
   if (input.newObjectives.length > 0) {
     const { error: objError } = await supabase.from("objectives").insert(
       input.newObjectives.map((o) => ({
@@ -110,6 +127,7 @@ export async function createOneToOne(input: OneToOneInput) {
   }
 
   revalidatePath(`/reps/${input.repId}`)
+  revalidatePath(`/reps/${input.repId}/scorecard`)
   revalidatePath("/today")
   revalidatePath("/actions")
 

@@ -108,7 +108,7 @@ export default async function NewOneToOnePage({ searchParams }: { searchParams: 
       </div>
 
       <div className="mt-6">
-        <OneToOneForm repId={repId} managerId={user.id} reps={reps ?? []} existingObjectives={objectives ?? []} />
+        <OneToOneForm repId={repId} managerId={user.id} existingObjectives={objectives ?? []} />
       </div>
     </div>
   )

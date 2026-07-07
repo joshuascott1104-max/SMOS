@@ -4,7 +4,7 @@ import { getRepWorkspace } from "@/lib/data/reps"
 import { getRepCommercialHealth, currentMonth } from "@/lib/data/commercial-health"
 import { requireCurrentUser } from "@/lib/auth"
 import { PageHeader, Card, CardHeading, EmptyState, Badge, LinkButton } from "@/components/ui"
-import { formatCurrency, formatDate, labelize } from "@/lib/format"
+import { formatCurrency, formatDate, labelize, isDueSoon } from "@/lib/format"
 import { ScoreRing } from "@/components/score-ring"
 import { RatingBadge } from "@/components/rating-badge"
 import { AddManagerNoteForm } from "./manager-note-form"
@@ -53,7 +53,7 @@ export default async function RepWorkspacePage({ params }: { params: Promise<{ r
             ) : (
               <ul className="space-y-2 text-sm">
                 {openActions
-                  .filter((a) => new Date(a.due_date) <= new Date(Date.now() + 3 * 86400000))
+                  .filter((a) => isDueSoon(a.due_date))
                   .map((a) => (
                     <li key={a.id} className="flex items-center justify-between">
                       <span className="text-zinc-900">{a.title}</span>

@@ -20,18 +20,21 @@ const BLANK = {
 
 export function KpiForm({ reps }: { reps: { id: string; full_name: string }[] }) {
   const [pending, startTransition] = useTransition()
-  const [loading, setLoading] = useState(false)
-  const [saved, setSaved] = useState(false)
   const [isExisting, setIsExisting] = useState(false)
   const [repId, setRepId] = useState(reps[0]?.id ?? "")
   const [weekCommencing, setWeekCommencing] = useState(startOfWeek())
   const [fields, setFields] = useState(BLANK)
+  const [loadedKey, setLoadedKey] = useState<string | null>(null)
+  const [savedKey, setSavedKey] = useState<string | null>(null)
+
+  const currentKey = `${repId}|${weekCommencing}`
+  const loading = Boolean(repId && weekCommencing) && loadedKey !== currentKey
+  const saved = savedKey === currentKey
 
   useEffect(() => {
     if (!repId || !weekCommencing) return
     let cancelled = false
-    setLoading(true)
-    setSaved(false)
+    const key = `${repId}|${weekCommencing}`
     getKpiEntry(repId, weekCommencing).then((existing) => {
       if (cancelled) return
       if (existing) {
@@ -52,7 +55,7 @@ export function KpiForm({ reps }: { reps: { id: string; full_name: string }[] })
         setFields(BLANK)
         setIsExisting(false)
       }
-      setLoading(false)
+      setLoadedKey(key)
     })
     return () => {
       cancelled = true
@@ -132,7 +135,7 @@ export function KpiForm({ reps }: { reps: { id: string; full_name: string }[] })
         onClick={() =>
           startTransition(async () => {
             await upsertKpi({ repId, weekCommencing, ...fields })
-            setSaved(true)
+            setSavedKey(currentKey)
             setIsExisting(true)
           })
         }

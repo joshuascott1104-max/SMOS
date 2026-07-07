@@ -1,25 +1,34 @@
-import type { CategoryScore } from "@/lib/scoring"
 import { formatCurrency } from "@/lib/format"
+
+export type MeterCategory = {
+  label: string
+  actual: number
+  target: number
+  unit: string
+  achievementPct: number
+  points: number
+  maxPoints: number
+}
 
 const TRACK = "#b7d3f6"
 const FILL = "#2a78d6"
 const WEAK_THRESHOLD = 70
 
-function formatActual(c: CategoryScore): string {
+function formatActual(c: MeterCategory): string {
   if (c.unit === "£") return formatCurrency(c.actual)
   if (c.unit === "%") return `${Math.round(c.actual)}%`
   if (c.unit === "/wk") return `${c.actual}`
   return `${c.actual}`
 }
 
-function formatTarget(c: CategoryScore): string {
+function formatTarget(c: MeterCategory): string {
   if (c.unit === "£") return formatCurrency(c.target)
   if (c.unit === "%") return `${Math.round(c.target)}%`
   if (c.unit === "/wk") return `${c.target}`
   return `${c.target}`
 }
 
-export function CategoryMeter({ category }: { category: CategoryScore }) {
+export function CategoryMeter({ category }: { category: MeterCategory }) {
   const isWeak = category.achievementPct < WEAK_THRESHOLD
 
   return (

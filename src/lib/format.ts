@@ -32,6 +32,12 @@ export function isOverdue(dueDate: string, status: string): boolean {
   return new Date(dueDate) < today
 }
 
+export function isDueSoon(dueDate: string, days = 3): boolean {
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() + days)
+  return new Date(dueDate) <= cutoff
+}
+
 export function startOfWeek(date = new Date()): string {
   const d = new Date(date)
   const day = d.getDay()

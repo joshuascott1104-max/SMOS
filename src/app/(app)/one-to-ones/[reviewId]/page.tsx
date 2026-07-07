@@ -5,7 +5,10 @@ import { PageHeader, Card, CardHeading, EmptyState, Badge } from "@/components/u
 import { formatDate } from "@/lib/format"
 import { ScoreRing } from "@/components/score-ring"
 import { RatingBadge } from "@/components/rating-badge"
+import { CategoryMeter } from "@/components/category-meter"
 import { getRepCommercialHealth } from "@/lib/data/commercial-health"
+import { getReviewScoreForReview } from "@/lib/data/review-scores"
+import { computeReviewScore, suggestedReviewCoachingFocus } from "@/lib/review-scoring"
 
 export default async function OneToOneDetailPage({ params }: { params: Promise<{ reviewId: string }> }) {
   const { reviewId } = await params
@@ -19,16 +22,20 @@ export default async function OneToOneDetailPage({ params }: { params: Promise<{
 
   if (!review) notFound()
 
-  const [{ data: objectives }, { data: commercialScore }] = await Promise.all([
+  const [{ data: objectives }, { data: commercialScore }, reviewScoreRecord] = await Promise.all([
     supabase.from("objectives").select("*").eq("review_id", reviewId).order("created_at"),
     review.commercial_score_id
       ? supabase.from("commercial_scores").select("rep_id, month").eq("id", review.commercial_score_id).single()
       : Promise.resolve({ data: null }),
+    getReviewScoreForReview(reviewId),
   ])
 
   const health = commercialScore
     ? await getRepCommercialHealth(commercialScore.rep_id, commercialScore.month)
     : null
+
+  const reviewScore = reviewScoreRecord ? computeReviewScore(reviewScoreRecord.categories) : null
+  const reviewFocus = reviewScore ? suggestedReviewCoachingFocus(reviewScore.categories) : []
 
   return (
     <div>
@@ -47,6 +54,38 @@ export default async function OneToOneDetailPage({ params }: { params: Promise<{
             </div>
           </Card>
         )}
+
+        {reviewScore && (
+          <Card className="lg:col-span-2">
+            <CardHeading>Review score (coaching tool, not commission)</CardHeading>
+            <div className="flex flex-col gap-6 md:flex-row">
+              <div className="flex flex-none flex-col items-center justify-center gap-2">
+                <ScoreRing score={(reviewScore.totalScore / 30) * 100} rating={reviewScore.rating} size={88} />
+                <p className="text-sm font-medium text-zinc-900">{reviewScore.totalScore} / 30</p>
+                <RatingBadge rating={reviewScore.rating} size="sm" />
+              </div>
+              <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
+                {reviewScore.categories.map((c) => (
+                  <CategoryMeter key={c.key} category={c} />
+                ))}
+              </div>
+            </div>
+            {reviewFocus.length > 0 && (
+              <div className="mt-3 border-t border-zinc-100 pt-3">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-zinc-500">Suggested coaching focus</p>
+                <ul className="list-disc space-y-1 pl-4 text-sm text-zinc-700">
+                  {reviewFocus.map((f) => (
+                    <li key={f}>{f}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {reviewScoreRecord?.notes && (
+              <p className="mt-3 border-t border-zinc-100 pt-3 text-sm text-zinc-700">{reviewScoreRecord.notes}</p>
+            )}
+          </Card>
+        )}
+
         <Card>
           <CardHeading>Performance summary</CardHeading>
           <p className="text-sm text-zinc-700">{review.performance_summary}</p>
