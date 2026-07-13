@@ -12,6 +12,9 @@ export function CreateRepForm({ depots }: { depots: { id: string; name: string }
   const [startDate, setStartDate] = useState("")
   const [monthlyTarget, setMonthlyTarget] = useState(0)
   const [newCustomerTarget, setNewCustomerTarget] = useState(2)
+  const [qualifiedOpportunitiesWeeklyTarget, setQualifiedOpportunitiesWeeklyTarget] = useState(20)
+  const [discoveryMeetingsWeeklyTarget, setDiscoveryMeetingsWeeklyTarget] = useState(8)
+  const [proposalsIssuedWeeklyTarget, setProposalsIssuedWeeklyTarget] = useState(6)
 
   if (!open) {
     return (
@@ -44,13 +47,52 @@ export function CreateRepForm({ depots }: { depots: { id: string; name: string }
           <label className="block text-xs text-zinc-600">New customer target (/month)</label>
           <input type="number" min={0} value={newCustomerTarget} onChange={(e) => setNewCustomerTarget(Number(e.target.value))} className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm" />
         </div>
+        <div>
+          <label className="block text-xs text-zinc-600">Qualified opps (/wk)</label>
+          <input
+            type="number"
+            min={0}
+            value={qualifiedOpportunitiesWeeklyTarget}
+            onChange={(e) => setQualifiedOpportunitiesWeeklyTarget(Number(e.target.value))}
+            className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-zinc-600">Discovery meetings (/wk)</label>
+          <input
+            type="number"
+            min={0}
+            value={discoveryMeetingsWeeklyTarget}
+            onChange={(e) => setDiscoveryMeetingsWeeklyTarget(Number(e.target.value))}
+            className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-zinc-600">Proposals issued (/wk)</label>
+          <input
+            type="number"
+            min={0}
+            value={proposalsIssuedWeeklyTarget}
+            onChange={(e) => setProposalsIssuedWeeklyTarget(Number(e.target.value))}
+            className="w-full rounded-md border border-zinc-300 px-2 py-1 text-sm"
+          />
+        </div>
       </div>
       <div className="flex gap-2">
         <Button
           disabled={pending || !fullName.trim() || !depotId}
           onClick={() =>
             startTransition(async () => {
-              await createRep({ fullName, depotId, startDate: startDate || null, monthlyTarget, newCustomerTarget })
+              await createRep({
+                fullName,
+                depotId,
+                startDate: startDate || null,
+                monthlyTarget,
+                newCustomerTarget,
+                qualifiedOpportunitiesWeeklyTarget,
+                discoveryMeetingsWeeklyTarget,
+                proposalsIssuedWeeklyTarget,
+              })
               setOpen(false)
               setFullName("")
             })

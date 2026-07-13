@@ -30,6 +30,9 @@ export async function createRep(input: {
   startDate: string | null
   monthlyTarget: number
   newCustomerTarget: number
+  qualifiedOpportunitiesWeeklyTarget: number
+  discoveryMeetingsWeeklyTarget: number
+  proposalsIssuedWeeklyTarget: number
 }) {
   const user = await requireCurrentUser()
   const supabase = await createClient()
@@ -41,6 +44,9 @@ export async function createRep(input: {
     start_date: input.startDate,
     monthly_target: input.monthlyTarget,
     new_customer_target: input.newCustomerTarget,
+    qualified_opportunities_weekly_target: input.qualifiedOpportunitiesWeeklyTarget,
+    discovery_meetings_weekly_target: input.discoveryMeetingsWeeklyTarget,
+    proposals_issued_weekly_target: input.proposalsIssuedWeeklyTarget,
   })
 
   if (error) throw new Error(error.message)
@@ -48,17 +54,37 @@ export async function createRep(input: {
   revalidatePath("/settings")
 }
 
-export async function updateRepTargets(repId: string, monthlyTarget: number, newCustomerTarget: number) {
+export async function updateRepTargets(
+  repId: string,
+  targets: {
+    monthlyTarget: number
+    newCustomerTarget: number
+    qualifiedOpportunitiesWeeklyTarget: number
+    discoveryMeetingsWeeklyTarget: number
+    proposalsIssuedWeeklyTarget: number
+  }
+) {
+  for (const [key, value] of Object.entries(targets)) {
+    if (!Number.isFinite(value) || value < 0) throw new Error(`${key} must be a non-negative number`)
+  }
+
   const supabase = await createClient()
   const { error } = await supabase
     .from("reps")
-    .update({ monthly_target: monthlyTarget, new_customer_target: newCustomerTarget })
+    .update({
+      monthly_target: targets.monthlyTarget,
+      new_customer_target: targets.newCustomerTarget,
+      qualified_opportunities_weekly_target: targets.qualifiedOpportunitiesWeeklyTarget,
+      discovery_meetings_weekly_target: targets.discoveryMeetingsWeeklyTarget,
+      proposals_issued_weekly_target: targets.proposalsIssuedWeeklyTarget,
+    })
     .eq("id", repId)
   if (error) throw new Error(error.message)
   revalidatePath("/team")
   revalidatePath("/settings")
   revalidatePath(`/reps/${repId}`)
   revalidatePath(`/reps/${repId}/scorecard`)
+  revalidatePath(`/kpis`)
 }
 
 export async function updateRepStatus(repId: string, status: "active" | "inactive") {

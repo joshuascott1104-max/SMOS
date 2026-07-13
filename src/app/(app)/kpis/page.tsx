@@ -7,7 +7,13 @@ export default async function KpisPage() {
   const supabase = await createClient()
 
   const [{ data: reps }, { data: kpis }] = await Promise.all([
-    supabase.from("reps").select("id, full_name").eq("status", "active").order("full_name"),
+    supabase
+      .from("reps")
+      .select(
+        "id, full_name, qualified_opportunities_weekly_target, discovery_meetings_weekly_target, proposals_issued_weekly_target"
+      )
+      .eq("status", "active")
+      .order("full_name"),
     supabase
       .from("kpis")
       .select("*, reps:rep_id(full_name)")

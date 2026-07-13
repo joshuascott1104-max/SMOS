@@ -2,9 +2,8 @@ import "server-only"
 import { createClient } from "@/lib/supabase/server"
 import { computeCommercialHealthScore, type CommercialHealthScore } from "@/lib/scoring"
 
-const QUALIFIED_OPPORTUNITIES_WEEKLY_TARGET = 20
-const DISCOVERY_MEETINGS_WEEKLY_TARGET = 8
-const PROPOSALS_ISSUED_WEEKLY_TARGET = 6
+const REP_TARGET_COLUMNS =
+  "id, full_name, monthly_target, new_customer_target, qualified_opportunities_weekly_target, discovery_meetings_weekly_target, proposals_issued_weekly_target"
 
 export function currentMonth(): string {
   const now = new Date()
@@ -23,6 +22,13 @@ export type RepCommercialHealth = {
   month: string
   score: CommercialHealthScore
   weeksLogged: number
+  targets: {
+    monthlyTarget: number
+    newCustomerTarget: number
+    qualifiedOpportunitiesWeeklyTarget: number
+    discoveryMeetingsWeeklyTarget: number
+    proposalsIssuedWeeklyTarget: number
+  }
   manualEntry: {
     id: string | null
     newCustomersWon: number
@@ -33,10 +39,17 @@ export type RepCommercialHealth = {
   }
 }
 
-async function computeForRep(
-  rep: { id: string; full_name: string; monthly_target: number; new_customer_target: number },
-  month: string
-): Promise<RepCommercialHealth> {
+type RepTargetRow = {
+  id: string
+  full_name: string
+  monthly_target: number
+  new_customer_target: number
+  qualified_opportunities_weekly_target: number
+  discovery_meetings_weekly_target: number
+  proposals_issued_weekly_target: number
+}
+
+async function computeForRep(rep: RepTargetRow, month: string): Promise<RepCommercialHealth> {
   const supabase = await createClient()
   const { start, end } = monthRange(month)
 
@@ -67,11 +80,11 @@ async function computeForRep(
     revenueWonThisMonth: totals.revenue,
     newCustomerTarget: rep.new_customer_target,
     newCustomersWon: scoreRow?.new_customers_won ?? 0,
-    qualifiedOpportunitiesWeeklyTarget: QUALIFIED_OPPORTUNITIES_WEEKLY_TARGET,
+    qualifiedOpportunitiesWeeklyTarget: rep.qualified_opportunities_weekly_target,
     qualifiedOpportunitiesActual: totals.qualifiedOpportunities,
-    discoveryMeetingsWeeklyTarget: DISCOVERY_MEETINGS_WEEKLY_TARGET,
+    discoveryMeetingsWeeklyTarget: rep.discovery_meetings_weekly_target,
     discoveryMeetingsActual: totals.discoveryMeetings,
-    proposalsIssuedWeeklyTarget: PROPOSALS_ISSUED_WEEKLY_TARGET,
+    proposalsIssuedWeeklyTarget: rep.proposals_issued_weekly_target,
     proposalsIssuedActual: totals.proposalsIssued,
     weeksLogged,
     gateProgressionPct: scoreRow?.gate_progression_pct ?? 0,
@@ -85,6 +98,13 @@ async function computeForRep(
     month,
     score,
     weeksLogged,
+    targets: {
+      monthlyTarget: Number(rep.monthly_target),
+      newCustomerTarget: rep.new_customer_target,
+      qualifiedOpportunitiesWeeklyTarget: rep.qualified_opportunities_weekly_target,
+      discoveryMeetingsWeeklyTarget: rep.discovery_meetings_weekly_target,
+      proposalsIssuedWeeklyTarget: rep.proposals_issued_weekly_target,
+    },
     manualEntry: {
       id: scoreRow?.id ?? null,
       newCustomersWon: scoreRow?.new_customers_won ?? 0,
@@ -98,11 +118,7 @@ async function computeForRep(
 
 export async function getRepCommercialHealth(repId: string, month: string): Promise<RepCommercialHealth | null> {
   const supabase = await createClient()
-  const { data: rep } = await supabase
-    .from("reps")
-    .select("id, full_name, monthly_target, new_customer_target")
-    .eq("id", repId)
-    .single()
+  const { data: rep } = await supabase.from("reps").select(REP_TARGET_COLUMNS).eq("id", repId).single()
 
   if (!rep) return null
   return computeForRep(rep, month)
@@ -110,15 +126,9 @@ export async function getRepCommercialHealth(repId: string, month: string): Prom
 
 export async function getTeamCommercialHealth(month: string): Promise<RepCommercialHealth[]> {
   const supabase = await createClient()
-  const { data: reps } = await supabase
-    .from("reps")
-    .select("id, full_name, monthly_target, new_customer_target")
-    .eq("status", "active")
-    .order("full_name")
+  const { data: reps } = await supabase.from("reps").select(REP_TARGET_COLUMNS).eq("status", "active").order("full_name")
 
   if (!reps || reps.length === 0) return []
 
   return Promise.all(reps.map((rep) => computeForRep(rep, month)))
 }
-
-export { QUALIFIED_OPPORTUNITIES_WEEKLY_TARGET, DISCOVERY_MEETINGS_WEEKLY_TARGET, PROPOSALS_ISSUED_WEEKLY_TARGET }

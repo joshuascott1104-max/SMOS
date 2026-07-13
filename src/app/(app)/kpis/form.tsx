@@ -18,7 +18,15 @@ const BLANK = {
   managerNotes: "",
 }
 
-export function KpiForm({ reps }: { reps: { id: string; full_name: string }[] }) {
+type RepOption = {
+  id: string
+  full_name: string
+  qualified_opportunities_weekly_target: number
+  discovery_meetings_weekly_target: number
+  proposals_issued_weekly_target: number
+}
+
+export function KpiForm({ reps }: { reps: RepOption[] }) {
   const [pending, startTransition] = useTransition()
   const [isExisting, setIsExisting] = useState(false)
   const [repId, setRepId] = useState(reps[0]?.id ?? "")
@@ -26,6 +34,8 @@ export function KpiForm({ reps }: { reps: { id: string; full_name: string }[] })
   const [fields, setFields] = useState(BLANK)
   const [loadedKey, setLoadedKey] = useState<string | null>(null)
   const [savedKey, setSavedKey] = useState<string | null>(null)
+
+  const selectedRep = reps.find((r) => r.id === repId)
 
   const currentKey = `${repId}|${weekCommencing}`
   const loading = Boolean(repId && weekCommencing) && loadedKey !== currentKey
@@ -106,17 +116,17 @@ export function KpiForm({ reps }: { reps: { id: string; full_name: string }[] })
         <NumberField label="Revenue won (£)" value={fields.revenueWon} onChange={(v) => setField("revenueWon", v)} />
         <NumberField label="Forecast (£)" value={fields.forecastValue} onChange={(v) => setField("forecastValue", v)} />
         <NumberField
-          label="Qualified opportunities (target 20/wk)"
+          label={`Qualified opportunities (target ${selectedRep?.qualified_opportunities_weekly_target ?? "—"}/wk)`}
           value={fields.qualifiedOpportunities}
           onChange={(v) => setField("qualifiedOpportunities", v)}
         />
         <NumberField
-          label="Discovery meetings (target 8/wk)"
+          label={`Discovery meetings (target ${selectedRep?.discovery_meetings_weekly_target ?? "—"}/wk)`}
           value={fields.discoveryMeetings}
           onChange={(v) => setField("discoveryMeetings", v)}
         />
         <NumberField
-          label="Proposals issued (target 6/wk)"
+          label={`Proposals issued (target ${selectedRep?.proposals_issued_weekly_target ?? "—"}/wk)`}
           value={fields.proposalsIssued}
           onChange={(v) => setField("proposalsIssued", v)}
         />

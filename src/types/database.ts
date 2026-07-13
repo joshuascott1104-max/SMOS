@@ -559,36 +559,45 @@ export type Database = {
         Row: {
           created_at: string
           depot_id: string
+          discovery_meetings_weekly_target: number
           full_name: string
           id: string
           manager_id: string
           monthly_target: number
           new_customer_target: number
           notes: string | null
+          proposals_issued_weekly_target: number
+          qualified_opportunities_weekly_target: number
           start_date: string | null
           status: string
         }
         Insert: {
           created_at?: string
           depot_id: string
+          discovery_meetings_weekly_target?: number
           full_name: string
           id?: string
           manager_id: string
           monthly_target?: number
           new_customer_target?: number
           notes?: string | null
+          proposals_issued_weekly_target?: number
+          qualified_opportunities_weekly_target?: number
           start_date?: string | null
           status?: string
         }
         Update: {
           created_at?: string
           depot_id?: string
+          discovery_meetings_weekly_target?: number
           full_name?: string
           id?: string
           manager_id?: string
           monthly_target?: number
           new_customer_target?: number
           notes?: string | null
+          proposals_issued_weekly_target?: number
+          qualified_opportunities_weekly_target?: number
           start_date?: string | null
           status?: string
         }

@@ -10,6 +10,7 @@ import { RatingBadge } from "@/components/rating-badge"
 import { CategoryMeter } from "@/components/category-meter"
 import { formatDate } from "@/lib/format"
 import { ManualScoreForm } from "./manual-score-form"
+import { TargetsForm } from "./targets-form"
 
 const TREND_LABEL: Record<string, string> = {
   improving: "Improving",
@@ -156,6 +157,14 @@ export default async function RepScorecardPage({
             </Card>
           )
         })}
+
+        <Card className="lg:col-span-3">
+          <CardHeading>Targets</CardHeading>
+          <p className="mb-3 text-xs text-zinc-500">
+            Every target scored above is set per rep and editable here — nothing is shared or hardcoded across the team.
+          </p>
+          <TargetsForm repId={repId} initial={health.targets} />
+        </Card>
 
         <Card className="lg:col-span-3">
           <CardHeading>Monthly manual inputs</CardHeading>
